@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using MyFace.Models.Database;
+using MyFace.Helpers;
 
 namespace MyFace.Data
 {
@@ -10,7 +11,7 @@ namespace MyFace.Data
 
         private static readonly IList<IList<string>> Data = new List<IList<string>>
         {
-            new List<string> { "Kania", "Placido", "kplacido0", "kplacido0@qq.com" },
+            new List<string> { "Kania", "Placido", "kplacido0", "kplacido0@qq.com",  },
             new List<string> { "Scotty", "Gariff", "sgariff1", "sgariff1@biblegateway.com" },
             new List<string> { "Colly", "Burgiss", "cburgiss2", "cburgiss2@amazon.co.uk" },
             new List<string> { "Barnie", "Percival", "bpercival3", "bpercival3@cmu.edu" },
@@ -119,12 +120,19 @@ namespace MyFace.Data
 
         private static User CreateRandomUser(int index)
         {
+            string genericPassword = "password123";
+
+            byte[] salt = PasswordHelper.SaltGenerator();
+            string hash = PasswordHelper.HashGenerator(genericPassword, salt);
+            
             return new User
             {
                 FirstName = Data[index][0],
                 LastName = Data[index][1],
                 Username = Data[index][2],
                 Email = Data[index][3],
+                HashedPassword = hash,
+                Salt = salt,
                 ProfileImageUrl = ImageGenerator.GetProfileImage(Data[index][2]),
                 CoverImageUrl = ImageGenerator.GetCoverImage(index),
             };

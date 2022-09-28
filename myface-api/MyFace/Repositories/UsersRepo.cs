@@ -65,6 +65,8 @@ namespace MyFace.Repositories
                 LastName = newUser.LastName,
                 Email = newUser.Email,
                 Username = newUser.Username,
+                HashedPassword = newUser.HashedPassword,
+                Salt = newUser.Salt,
                 ProfileImageUrl = newUser.ProfileImageUrl,
                 CoverImageUrl = newUser.CoverImageUrl,
             });
