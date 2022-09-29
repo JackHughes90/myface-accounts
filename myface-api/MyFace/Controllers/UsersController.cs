@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MyFace.Helpers;
 using MyFace.Models.Request;
 using MyFace.Models.Response;
 using MyFace.Repositories;
@@ -10,15 +11,26 @@ namespace MyFace.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUsersRepo _users;
+        private readonly IAuthRepo _auth;
 
-        public UsersController(IUsersRepo users)
+        public UsersController(IUsersRepo users, IAuthRepo auth)
         {
             _users = users;
+            _auth = auth;
         }
         
         [HttpGet("")]
-        public ActionResult<UserListResponse> Search([FromQuery] UserSearchRequest searchRequest)
+        public ActionResult<UserListResponse> Search([FromQuery] UserSearchRequest searchRequest, 
+                                                     [FromHeader] string authorization)
         {
+            var usernamePassword = PasswordHelper.DecodeAuthHeader(authorization);
+            string username = usernamePassword.Username;
+            string password = usernamePassword.Password;
+            
+            if (!_auth.IsAuthorised(username, password))
+            {
+                return Unauthorized();
+            }
             var users = _users.Search(searchRequest);
             var userCount = _users.Count(searchRequest);
             return UserListResponse.Create(searchRequest, users, userCount);

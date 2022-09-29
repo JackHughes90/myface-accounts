@@ -27,5 +27,17 @@ namespace MyFace.Helpers
 
             return hashed;
         }
+
+        public static (string Username, string Password) DecodeAuthHeader(string authorization)
+        {
+            string encodedUsernamePassword = authorization.Substring("Basic ".Length);
+            string usernamePassword = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encodedUsernamePassword));
+            string[] usernamePasswordArray = usernamePassword.Split(':');
+            string username = usernamePasswordArray[0];
+            string password = usernamePasswordArray[1];  
+
+            return (username, password);          
+
+        }
     }
 }

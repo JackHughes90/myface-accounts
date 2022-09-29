@@ -6,6 +6,7 @@ using System;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using MyFace.Models.Database;
+using MyFace.Helpers;
 
 namespace MyFace.Controllers
 {
@@ -14,12 +15,14 @@ namespace MyFace.Controllers
     public class FeedController : ControllerBase
     {
         private readonly IPostsRepo _posts;
-        private readonly IUsersRepo _users;
+    
+        private readonly IAuthRepo _auth;
 
-        public FeedController(IPostsRepo posts, IUsersRepo users)
+
+        public FeedController(IPostsRepo posts, IAuthRepo auth)
         {
             _posts = posts;
-            _users = users;
+            _auth = auth;
         }
 
         [HttpGet("")]
@@ -28,16 +31,14 @@ namespace MyFace.Controllers
             [FromHeader] string authorization
             )
         {
-            string encodedUsernamePassword = authorization.Substring("Basic ".Length);
-            string usernamePassword = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encodedUsernamePassword));
-            string[] usernamePasswordArray = usernamePassword.Split(':');
-            string username = usernamePasswordArray[0];
-            string password = usernamePasswordArray[1];
-
-            User user = _users.GetByUsername(username);
+            var usernamePassword = PasswordHelper.DecodeAuthHeader(authorization);
+            string username = usernamePassword.Username;
+            string password = usernamePassword.Password;
             
-            
-
+            if (!_auth.IsAuthorised(username, password))
+            {
+                return Unauthorized();
+            }
 
             var posts = _posts.SearchFeed(searchRequest);
             var postCount = _posts.Count(searchRequest);
